@@ -151,6 +151,30 @@ describe('StreamingMessageParser', () => {
     ])('should correctly parse chunks and strip out bolt artifacts (%#)', (input, expected) => {
       runTest(input, expected);
     });
+
+    it('preserves whitespace-sensitive file action content', () => {
+      const onActionClose = vi.fn<ActionCallback>();
+
+      const parser = new StreamingMessageParser({
+        artifactElement: () => '',
+        callbacks: { onActionClose },
+      });
+
+      const message =
+        '<boltArtifact title="Indented code" id="artifact_2"><boltAction type="file" filePath="src/index.ts">  const message = "hi";\n</boltAction></boltArtifact>';
+
+      parser.parse('message_with_file', message);
+
+      expect(onActionClose).toHaveBeenCalledTimes(1);
+
+      const [{ action }] = onActionClose.mock.calls[0];
+
+      expect(action).toEqual({
+        content: '  const message = "hi";\n',
+        filePath: 'src/index.ts',
+        type: 'file',
+      });
+    });
   });
 });
 
