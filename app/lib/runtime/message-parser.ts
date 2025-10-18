@@ -91,13 +91,7 @@ export class StreamingMessageParser {
           if (closeIndex !== -1) {
             currentAction.content += input.slice(i, closeIndex);
 
-            let content = currentAction.content.trim();
-
-            if ('type' in currentAction && currentAction.type === 'file') {
-              content += '\n';
-            }
-
-            currentAction.content = content;
+            currentAction.content = this.#normalizeActionContent(currentAction);
 
             this._options.callbacks?.onActionClose?.({
               artifactId: currentArtifact.id,
@@ -238,6 +232,14 @@ export class StreamingMessageParser {
     this.#messages.clear();
   }
 
+  #normalizeActionContent(action: BoltActionData) {
+    if ('type' in action && action.type === 'file') {
+      return normalizeFileContent(action.content);
+    }
+
+    return action.content.trim();
+  }
+
   #parseActionTag(input: string, actionOpenIndex: number, actionEndIndex: number) {
     const actionTag = input.slice(actionOpenIndex, actionEndIndex + 1);
 
@@ -264,8 +266,21 @@ export class StreamingMessageParser {
   }
 
   #extractAttribute(tag: string, attributeName: string): string | undefined {
-    const match = tag.match(new RegExp(`${attributeName}="([^"]*)"`, 'i'));
-    return match ? match[1] : undefined;
+    const search = `${attributeName}="`;
+    const attributeStart = tag.indexOf(search);
+
+    if (attributeStart === -1) {
+      return undefined;
+    }
+
+    const valueStart = attributeStart + search.length;
+    const closingQuoteIndex = tag.indexOf('"', valueStart);
+
+    if (closingQuoteIndex === -1) {
+      return undefined;
+    }
+
+    return tag.slice(valueStart, closingQuoteIndex);
   }
 }
 
@@ -282,4 +297,14 @@ const createArtifactElement: ElementFactory = (props) => {
 
 function camelToDashCase(input: string) {
   return input.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+}
+
+function normalizeFileContent(content: string) {
+  const normalizedLineEndings = content.replace(/\r\n/g, '\n');
+
+  if (normalizedLineEndings.endsWith('\n')) {
+    return normalizedLineEndings;
+  }
+
+  return `${normalizedLineEndings}\n`;
 }

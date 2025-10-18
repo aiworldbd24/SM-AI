@@ -1,6 +1,6 @@
-[![Bolt Open Source Codebase](./public/social_preview_index.jpg)](https://bolt.new)
+[![SMCreativeVision Open Source Codebase](./public/social_preview_index.jpg)](https://bolt.new)
 
-> Welcome to the **Bolt** open-source codebase! This repo contains a simple example app using the core components from bolt.new to help you get started building **AI-powered software development tools** powered by StackBlitz’s **WebContainer API**.
+> Welcome to **SMCreativeVision**, our customization of the Bolt open-source codebase! This repo contains a simple example app using the core components from bolt.new to help you get started building **AI-powered software development tools** powered by StackBlitz’s **WebContainer API**.
 
 ### Why Build with Bolt + WebContainer API
 
